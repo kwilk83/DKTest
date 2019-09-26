@@ -12,6 +12,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SwingData : NSObject
 
+@property (strong, nonatomic) NSArray *timestamps;
+@property (strong, nonatomic) NSArray *ax;
+@property (strong, nonatomic) NSArray *ay;
+@property (strong, nonatomic) NSArray *az;
+@property (strong, nonatomic) NSArray *wx;
+@property (strong, nonatomic) NSArray *wy;
+@property (strong, nonatomic) NSArray *wz;
+
+-(id)initWithFileName:(NSString*)filename;
+
 @end
 
 NS_ASSUME_NONNULL_END
