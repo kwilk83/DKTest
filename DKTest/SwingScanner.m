@@ -12,52 +12,72 @@
 
 @implementation SwingScanner
 
--(int)searchContinuityAboveValue:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold:(float)threshold winLength:(int)winLength {
+-(NSUInteger)searchContinuityAboveValue:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold:(float)threshold winLength:(int)winLength {
     
-    return [self searchData:data data2:nil indexBegin:indexBegin indexEnd:indexEnd threshold1:threshold threshold2:CGFLOAT_MAX winLength:winLength];
+    return [[self searchData:data
+                       data2:nil
+                  indexBegin:indexBegin
+                    indexEnd:indexEnd
+                  threshold1:threshold
+                  threshold2:CGFLOAT_MAX
+                   winLength:winLength] indexAtPosition:0];
 }
 
--(int)backSearchContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
+-(NSUInteger)backSearchContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
     
     NSArray* reveresedArray = [[data reverseObjectEnumerator] allObjects];
-    return [self searchData:reveresedArray data2:nil indexBegin:indexBegin indexEnd:indexEnd threshold1:thresholdLo threshold2:thresholdHi winLength:winLength];
+    return [[self searchData:reveresedArray
+                       data2:nil
+                  indexBegin:indexBegin
+                    indexEnd:indexEnd
+                  threshold1:thresholdLo
+                  threshold2:thresholdHi
+                   winLength:winLength] indexAtPosition:0];
 }
 
--(int)searchContinuityAboveValueTwoSignals:(NSArray *)data1 data2:(NSArray *)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
+-(NSUInteger)searchContinuityAboveValueTwoSignals:(NSArray *)data1 data2:(NSArray *)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
     
-    return [self searchData:data1 data2:data2 indexBegin:indexBegin indexEnd:indexEnd threshold1:threshold1 threshold2:threshold2 winLength:winLength];
+    return [[self searchData:data1
+                       data2:data2
+                  indexBegin:indexBegin
+                    indexEnd:indexEnd
+                  threshold1:threshold1
+                  threshold2:threshold2
+                   winLength:winLength] indexAtPosition:0];
 }
 
 -(NSArray*)searchMultiContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
     
     NSMutableArray* returnArray = [NSMutableArray new];
-    NSMutableArray* mutArr = [NSMutableArray new];
-    long continuityCounter = 0;
+    int index = indexBegin;
     
-    for (long i = indexBegin; i <= indexEnd; i++)  {
+    do {
+        NSIndexPath *indexPath = [self searchData:data
+                                            data2:nil
+                                       indexBegin:index
+                                         indexEnd:indexEnd
+                                       threshold1:thresholdLo
+                                       threshold2:thresholdHi
+                                        winLength:winLength];
         
-        float value = [data[i] floatValue];
-        
-        if (value > thresholdLo && value < thresholdHi) {
-            continuityCounter++;
-            [mutArr addObject:[NSIndexPath indexPathWithIndexes:(NSUInteger*)i - continuityCounter length:continuityCounter]];
-        } else if (continuityCounter >= winLength) {
-            [returnArray addObject:mutArr];
-            mutArr = [NSMutableArray new];
-            continuityCounter = 0;
+        if (indexPath) {
+            [returnArray addObject:indexPath];
+            
+            // ensures subsequent search starts at the end of the last search
+            index = (int)[indexPath indexAtPosition:0] + winLength + 1;
         } else {
-            continuityCounter = 0;
+            index = indexEnd;
         }
-    }
+    } while (index < (indexEnd - winLength));
     
     return returnArray;
 }
 
 
--(int)searchData:(NSArray*)data1 data2:(NSArray*)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
-    int continuityCounter = 0;
+-(NSIndexPath*)searchData:(NSArray*)data1 data2:(NSArray*)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
+    long continuityCounter = 0;
     
-    for (int i = indexBegin; i <= indexEnd; i++)  {
+    for (long i = indexBegin; i <= indexEnd; i++)  {
         
         if (data2) {
 
@@ -82,9 +102,9 @@
         
         
         if (continuityCounter >= winLength) {
-            return i - continuityCounter;
+            return [NSIndexPath indexPathWithIndexes:(NSUInteger*)i - continuityCounter length:continuityCounter];
         }
     }
-    return -1;
+    return nil;
 }
 @end

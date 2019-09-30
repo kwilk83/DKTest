@@ -12,20 +12,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SwingScanner : NSObject
 
--(int)searchContinuityAboveValue:(NSArray*)data
+-(NSUInteger)searchContinuityAboveValue:(NSArray*)data
                        indexBegin:(int)indexBegin
                          indexEnd:(int)indexEnd
                         threshold:(float)threshold
                         winLength:(int)winLength;
 
--(int)backSearchContinuityWithinRange:(NSArray*)data
+-(NSUInteger)backSearchContinuityWithinRange:(NSArray*)data
                             indexBegin:(int)indexBegin
                               indexEnd:(int)indexEnd
                            thresholdLo:(float)thresholdLo
                            thresholdHi:(float)thresholdHi
                              winLength:(int)winLength;
 
--(int)searchContinuityAboveValueTwoSignals:(NSArray*)data1
+-(NSUInteger)searchContinuityAboveValueTwoSignals:(NSArray*)data1
                                       data2:(NSArray*)data2
                                  indexBegin:(int)indexBegin
                                    indexEnd:(int)indexEnd
