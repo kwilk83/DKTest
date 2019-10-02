@@ -14,12 +14,12 @@
 
 -(NSUInteger)searchContinuityAboveValue:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold:(float)threshold winLength:(int)winLength {
     
-    return [[self searchData:data
+    return [self searchData:data
                   indexBegin:indexBegin
                     indexEnd:indexEnd
-                  threshold1:threshold
-                  threshold2:CGFLOAT_MAX
-                   winLength:winLength] indexAtPosition:0];
+                   winLength:winLength comparisonBlock:^BOOL(float value) {
+        return value < threshold;
+    }];
 }
 
 -(NSUInteger)backSearchContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
@@ -28,9 +28,10 @@
     NSIndexPath* indexPath = [self searchData:reveresedArray
                                    indexBegin:indexBegin
                                      indexEnd:indexEnd
-                                   threshold1:thresholdLo
-                                   threshold2:thresholdHi
-                                    winLength:winLength];
+                                    winLength:winLength
+                              comparisonBlock:^BOOL(float value) {
+        return value > thresholdLo && value < thresholdHi;
+    }];
     
     return [reveresedArray count] - [indexPath indexAtPosition:0];
 }
@@ -43,17 +44,19 @@
         NSIndexPath *indexPath1 = [self searchData:data1
                                        indexBegin:index
                                          indexEnd:indexEnd
-                                       threshold1:threshold1
-                                       threshold2:CGFLOAT_MAX
-                                        winLength:winLength];
+                                         winLength:winLength
+                                   comparisonBlock:^BOOL(float value) {
+            return value > threshold1;
+        }];
         
         if (indexPath1) {
             NSIndexPath *indexPath2 = [self searchData:data2
                                             indexBegin:(int)[indexPath1 indexAtPosition:0]
                                               indexEnd:(int)[indexPath1 indexAtPosition:0] + winLength
-                                            threshold1:threshold2
-                                            threshold2:CGFLOAT_MAX
-                                             winLength:winLength];
+                                             winLength:winLength
+                                       comparisonBlock:^BOOL(float value) {
+                return value > threshold2;
+            }];
             
             if (indexPath2) {
                 return [indexPath2 indexAtPosition:0];
@@ -79,9 +82,10 @@
         NSIndexPath *indexPath = [self searchData:data
                                        indexBegin:index
                                          indexEnd:indexEnd
-                                       threshold1:thresholdLo
-                                       threshold2:thresholdHi
-                                        winLength:winLength];
+                                        winLength:winLength
+                                  comparisonBlock:^BOOL(float value) {
+            return value > thresholdLo && value < thresholdHi;
+        }];
         
         if (indexPath) {
             [returnArray addObject:indexPath];
@@ -97,18 +101,17 @@
 }
 
 
--(NSIndexPath*)searchData:(NSArray*)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
+-(NSIndexPath*)searchData:(NSArray*)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd winLength:(int)winLength comparisonBlock:(BOOL(^)(float value))comparisonBlock {
     long continuityCounter = 0;
     
     for (long i = indexBegin; i <= indexEnd; i++)  {
         
         float value = [data[i] floatValue];
-        if (value > threshold1 && value < threshold2) {
+        if (comparisonBlock(value)) {
             continuityCounter++;
         } else {
             continuityCounter = 0;
         }
-        
         
         if (continuityCounter >= winLength) {
             return [NSIndexPath indexPathWithIndexes:(NSUInteger*)i - continuityCounter length:continuityCounter];
