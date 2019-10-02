@@ -26,13 +26,15 @@
 -(NSUInteger)backSearchContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
     
     NSArray* reveresedArray = [[data reverseObjectEnumerator] allObjects];
-    return [[self searchData:reveresedArray
-                       data2:nil
-                  indexBegin:indexBegin
-                    indexEnd:indexEnd
-                  threshold1:thresholdLo
-                  threshold2:thresholdHi
-                   winLength:winLength] indexAtPosition:0];
+    NSIndexPath* indexPath = [self searchData:reveresedArray
+                                        data2:nil
+                                   indexBegin:indexBegin
+                                     indexEnd:indexEnd
+                                   threshold1:thresholdLo
+                                   threshold2:thresholdHi
+                                    winLength:winLength];
+    
+    return [indexPath indexAtPosition:0] + [indexPath length];
 }
 
 -(NSUInteger)searchContinuityAboveValueTwoSignals:(NSArray *)data1 data2:(NSArray *)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
