@@ -15,7 +15,6 @@
 -(NSUInteger)searchContinuityAboveValue:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold:(float)threshold winLength:(int)winLength {
     
     return [[self searchData:data
-                       data2:nil
                   indexBegin:indexBegin
                     indexEnd:indexEnd
                   threshold1:threshold
@@ -27,7 +26,6 @@
     
     NSArray* reveresedArray = [[data reverseObjectEnumerator] allObjects];
     NSIndexPath* indexPath = [self searchData:reveresedArray
-                                        data2:nil
                                    indexBegin:indexBegin
                                      indexEnd:indexEnd
                                    threshold1:thresholdLo
@@ -39,13 +37,37 @@
 
 -(NSUInteger)searchContinuityAboveValueTwoSignals:(NSArray *)data1 data2:(NSArray *)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
     
-    return [[self searchData:data1
-                       data2:data2
-                  indexBegin:indexBegin
-                    indexEnd:indexEnd
-                  threshold1:threshold1
-                  threshold2:threshold2
-                   winLength:winLength] indexAtPosition:0];
+    int index = indexBegin;
+    
+    do {
+        NSIndexPath *indexPath1 = [self searchData:data1
+                                       indexBegin:index
+                                         indexEnd:indexEnd
+                                       threshold1:threshold1
+                                       threshold2:CGFLOAT_MAX
+                                        winLength:winLength];
+        
+        if (indexPath1) {
+            NSIndexPath *indexPath2 = [self searchData:data2
+                                            indexBegin:(int)[indexPath1 indexAtPosition:0]
+                                              indexEnd:(int)[indexPath1 indexAtPosition:0] + winLength
+                                            threshold1:threshold2
+                                            threshold2:CGFLOAT_MAX
+                                             winLength:winLength];
+            
+            if (indexPath2) {
+                return [indexPath2 indexAtPosition:0];
+            } else {
+                // ensures subsequent search starts at last start + 1
+                index = (int)[indexPath1 indexAtPosition:0] + 1;
+            }
+            
+        } else {
+            index = indexEnd;
+        }
+    } while (index < (indexEnd - winLength));
+    
+    return -1;
 }
 
 -(NSArray*)searchMultiContinuityWithinRange:(NSArray *)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd thresholdLo:(float)thresholdLo thresholdHi:(float)thresholdHi winLength:(int)winLength {
@@ -55,7 +77,6 @@
     
     do {
         NSIndexPath *indexPath = [self searchData:data
-                                            data2:nil
                                        indexBegin:index
                                          indexEnd:indexEnd
                                        threshold1:thresholdLo
@@ -76,30 +97,16 @@
 }
 
 
--(NSIndexPath*)searchData:(NSArray*)data1 data2:(NSArray*)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
+-(NSIndexPath*)searchData:(NSArray*)data indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
     long continuityCounter = 0;
     
     for (long i = indexBegin; i <= indexEnd; i++)  {
         
-        if (data2) {
-
-            float value1 = [data1[i] floatValue];
-            float value2 = [data2[i] floatValue];
-            
-            if (value1 > threshold1 && value2 > threshold2) {
-                continuityCounter++;
-            } else {
-                continuityCounter = 0;
-            }
-            
+        float value = [data[i] floatValue];
+        if (value > threshold1 && value < threshold2) {
+            continuityCounter++;
         } else {
-            
-            float value = [data1[i] floatValue];
-            if (value > threshold1 && value < threshold2) {
-                continuityCounter++;
-            } else {
-                continuityCounter = 0;
-            }
+            continuityCounter = 0;
         }
         
         
