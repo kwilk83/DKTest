@@ -32,7 +32,7 @@
                                    threshold2:thresholdHi
                                     winLength:winLength];
     
-    return [indexPath indexAtPosition:0] + [indexPath length];
+    return [reveresedArray count] - [indexPath indexAtPosition:0];
 }
 
 -(NSUInteger)searchContinuityAboveValueTwoSignals:(NSArray *)data1 data2:(NSArray *)data2 indexBegin:(int)indexBegin indexEnd:(int)indexEnd threshold1:(float)threshold1 threshold2:(float)threshold2 winLength:(int)winLength {
